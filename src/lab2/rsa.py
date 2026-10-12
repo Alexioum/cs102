@@ -1,3 +1,5 @@
+"""Учебная реализация RSA."""
+
 import random
 import typing as tp
 
@@ -12,8 +14,14 @@ def is_prime(n: int) -> bool:
     >>> is_prime(8)
     False
     """
-    # PUT YOUR CODE HERE
-    pass
+    if n < 2:
+        return False
+    divisor = 2
+    while divisor * divisor <= n:
+        if n % divisor == 0:
+            return False
+        divisor += 1
+    return True
 
 
 def gcd(a: int, b: int) -> int:
@@ -24,8 +32,10 @@ def gcd(a: int, b: int) -> int:
     >>> gcd(3, 7)
     1
     """
-    # PUT YOUR CODE HERE
-    pass
+    a, b = abs(a), abs(b)
+    while b != 0:
+        a, b = b, a % b
+    return a
 
 
 def multiplicative_inverse(e: int, phi: int) -> int:
@@ -35,21 +45,31 @@ def multiplicative_inverse(e: int, phi: int) -> int:
     >>> multiplicative_inverse(7, 40)
     23
     """
-    # PUT YOUR CODE HERE
-    pass
+    if phi <= 1:
+        raise ValueError("Модуль должен быть больше 1")
+    a, b = e, phi
+    x0, x1 = 1, 0
+    while b != 0:
+        quotient = a // b
+        a, b = b, a - quotient * b
+        x0, x1 = x1, x0 - quotient * x1
+    if a != 1:
+        raise ValueError("Обратного числа не существует")
+    return x0 % phi
 
 
 def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[int, int]]:
+    """Создаёт открытый и закрытый ключи."""
     if not (is_prime(p) and is_prime(q)):
         raise ValueError("Both numbers must be prime.")
     elif p == q:
         raise ValueError("p and q cannot be equal")
 
     # n = pq
-    # PUT YOUR CODE HERE
+    n = p * q
 
     # phi = (p-1)(q-1)
-    # PUT YOUR CODE HERE
+    phi = (p - 1) * (q - 1)
 
     # Choose an integer e such that e and phi(n) are coprime
     e = random.randrange(1, phi)
@@ -69,6 +89,7 @@ def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[in
 
 
 def encrypt(pk: tp.Tuple[int, int], plaintext: str) -> tp.List[int]:
+    """Преобразует сообщение в список чисел."""
     # Unpack the key into it's components
     key, n = pk
     # Convert each letter in the plaintext to numbers based on
@@ -79,10 +100,11 @@ def encrypt(pk: tp.Tuple[int, int], plaintext: str) -> tp.List[int]:
 
 
 def decrypt(pk: tp.Tuple[int, int], ciphertext: tp.List[int]) -> str:
+    """Восстанавливает сообщение из списка чисел."""
     # Unpack the key into its components
     key, n = pk
     # Generate the plaintext based on the ciphertext and key using a^b mod m
-    plain = [chr((char ** key) % n) for char in ciphertext]
+    plain = [chr((char**key) % n) for char in ciphertext]
     # Return the array of bytes as a string
     return "".join(plain)
 
